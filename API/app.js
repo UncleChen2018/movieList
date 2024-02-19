@@ -1,9 +1,7 @@
-import express from "express";
-import morgan from "morgan";
-import cors from "cors";
-import {
-  getMovieList
-} from "./movieService.js";
+import express from 'express';
+import morgan from 'morgan';
+import cors from 'cors';
+import { getMovieList, findMovieById } from './movieService.js';
 
 // express init
 const app = express();
@@ -12,20 +10,29 @@ const app = express();
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(morgan("dev"));
+app.use(morgan('dev'));
 
 // API endpoints
 
 // GET: extra endpoint added to a service for the sole purpose of expressing its availability
-app.get("/ping", (req, res) => {
-  res.send("pong");
+app.get('/ping', (req, res) => {
+	res.send('pong');
 });
 
 // GET: list of all tweets
-app.get("/movieList", (req, res) => {
-  res.status(200).json(getMovieList());
+app.get('/movieList', (req, res) => {
+	res.status(200).json(getMovieList());
 });
 
+app.get('/movie/:id', (req, res) => {
+    const movie = findMovieById(req.params.id);
+
+    if (movie) {
+        res.status(200).json(movie);
+    } else {
+        res.status(404).send(`Movie id ${req.params.id} not found`);
+    }
+})
 
 // // POST: creates new tweet
 // app.post("/tweets", (req, res) => {
@@ -68,9 +75,8 @@ app.get("/movieList", (req, res) => {
 //     res.status(404).send(`Tweet id ${req.params.id} not found`);
 //   }
 // });
-  
 
 // Starts HTTP Server
 app.listen(8001, () => {
-  console.log("Server running on http://localhost:8001 🎉 🚀");
+	console.log('Server running on http://localhost:8001 🎉 🚀');
 });

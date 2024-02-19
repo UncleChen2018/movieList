@@ -76,9 +76,13 @@ export const getMovieList = () => {
 
 
 
-export const findTweetById = (tweetId) => {
-	return db.tweets.find((t) => t.id.toString() === tweetId);
+export const findMovieById = (movieId) => {
+	return db.details.find((m) => m.id.toString() === movieId);
 };
+
+
+
+
 
 export const createTweet = (text, username) => {
 	const newTweet = {

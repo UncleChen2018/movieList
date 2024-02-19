@@ -26,6 +26,8 @@ const ids = [
 	10770, 53, 10752, 37,
 ];
 
+let details=[];
+
 function generateGenresColor() {
 	let colorMap = {};
 	for (let i = 0; i < ids.length; i++) {
@@ -105,32 +107,74 @@ function renderMovieList(movieList) {
 		icon.classList.add('fa-solid', 'fa-angle-down');
 		foldingDiv.appendChild(icon);
 
-		foldingDiv.addEventListener('click', function (event) {
+		foldingDiv.addEventListener('click', async function (event) {
 			let icon = event.currentTarget.querySelector('i');
+            // this is the current status of the folding div
             let status = icon.classList.contains('fa-angle-down') ? 'folded' : 'unfolded';
+            let movieList = event.currentTarget.closest('.movie-item');
+            let movieId = movieList.dataset.movieId;
 
-			console.log(
-				event.currentTarget.closest('.movie-item').dataset.movieId,
-                status
-			);
+			// console.log(
+			// 	event.currentTarget.closest('.movie-item').dataset.movieId,
+			// );
 			const currentIcon = event.currentTarget.querySelector('i');
 			currentIcon.classList.toggle('fa-angle-down');
 			currentIcon.classList.toggle('fa-angle-up');
+            if (status === 'folded') {
+                const details = await getMovieDetails(movieId);
+                movieList.insertAdjacentElement('afterend', renderMovieDetails(details));
+            }
+            else {
+                const details = document.querySelector(`.movie-details[data-movie-id="${movieId}"]`);
+                details.remove();
+            }
+
+           
+
 		});
+    
 		return foldingDiv;
 	}
 }
+
+function renderMovieDetails(movie) {
+    const movieDetails = document.createElement('div');
+    movieDetails.classList.add('movie-details');
+    movieDetails.dataset.movieId = movie.id;
+    movieDetails.innerText = JSON.stringify(movie, null, 2);
+    
+    return movieDetails;
+
+
+}
+
 
 async function loadingList() {
 	try {
 		const movieListEndPoint = '/movieList';
 		let movieList = await fetch(baseURL + movieListEndPoint); //
 		movieList = await movieList.json();
-		console.log(movieList);
+		//console.log(movieList);
 		renderMovieList(movieList);
 	} catch (error) {
 		console.error('Error:', error.message);
 	}
+}
+
+async function getMovieDetails(movieId) {
+    try {
+        if (details[movieId]) {
+            return details[movieId];
+        }
+        const movieEndPoint = `/movie/${movieId}`;
+        let movie = await fetch(baseURL + movieEndPoint);
+        movie = await movie.json();
+        details[movieId] = movie;
+        return details[movieId];
+        
+    } catch (error) {
+        console.error('Error:', error.message);
+    }
 }
 
 document.addEventListener('DOMContentLoaded', loadingList);

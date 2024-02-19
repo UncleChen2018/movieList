@@ -131,6 +131,11 @@ main.home-page {
     margin-right: 5px;
 }
 
+.movies-list .folding:hover {
+    color: #FF6347;
+    cursor: pointer;
+}   
+
 
 
 .movies-list p{

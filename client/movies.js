@@ -100,6 +100,7 @@ function renderMovieList(movieList) {
 
 	function createFoldingDiv() {
 		const foldingDiv = document.createElement('div');
+        foldingDiv.classList.add('folding');
 		const icon = document.createElement('i');
 		icon.classList.add('fa-solid', 'fa-angle-down');
 		foldingDiv.appendChild(icon);
@@ -115,14 +116,6 @@ function renderMovieList(movieList) {
 			const currentIcon = event.currentTarget.querySelector('i');
 			currentIcon.classList.toggle('fa-angle-down');
 			currentIcon.classList.toggle('fa-angle-up');
-
-			// if (currentIcon.classList.contains('fa-angle-down')) {
-			// 	currentIcon.classList.remove('fa-angle-down');
-			// 	currentIcon.classList.add('fa-angle-up');
-			// } else {
-			// 	currentIcon.classList.remove('fa-angle-up');
-			// 	currentIcon.classList.add('fa-angle-down');
-			// }
 		});
 		return foldingDiv;
 	}

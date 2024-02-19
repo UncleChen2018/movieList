@@ -1,0 +1,207 @@
+body {
+    background-color: #FFF0E5;
+    text-align: center;
+    min-width: 1200px ;
+}
+
+header {
+    width: 96%;
+    display: flex;
+    justify-content: space-between;
+
+
+}
+
+#site_title {
+    margin: 10px 0 20px 20px;
+    font-size: 20px;
+    font-weight: bold;
+    color: #FFA07A;
+    text-shadow: 2px 2px 2px #FF6347;
+}
+
+#logo img {
+    width: auto;
+    height: 80px;
+    margin: 20px;
+
+}
+p{
+    line-height: 1.5;
+}
+
+nav {
+    display: flex;
+    justify-content: space-between;   
+    margin: 10px 80px 20px 0;
+    height: 120px;   
+}
+nav li {
+    font-size: 30px;
+    display: inline-block;
+    margin: 20px;
+}
+nav a {
+    color:black;
+ 
+}
+nav a:hover {
+    color: #FF6347;
+    background-color: white;
+}
+
+main.home-page {
+    position: relative;
+    width: 80%;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin: 0 80px 20px 80px;
+
+}
+
+.container {
+    border: solid  #FF6347;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+
+.left-column {
+    width: 60%;
+    text-align: left;
+    margin: 20px 20px 20px 20px;
+}
+
+.right-column {
+    width: 30%;
+    text-align: left;
+    margin: 20px 20px 20px 20px;
+}
+
+
+.movies-list li{
+    position: relative;
+    display: grid;
+    gap:5px;
+    grid-template-columns: 4fr 1fr 3fr 0.25fr;
+    justify-content: start;
+    align-items: center;
+    
+}
+
+
+.movies-list .column-name {
+    text-align: left;
+    font-size: 20px;
+    font-weight: bold;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.movies-list .movie-title {
+    font-family: Georgia, 'Times New Roman', Times, serif;
+    font-size: 20px;
+    font-weight: bold;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    padding: 0 10px;
+}
+
+.movies-list .movie-title:hover {
+    color: #FF6347;
+}
+
+.movies-list .popularity {
+    color: #E74C3C;
+}
+
+.movies-list .genres {
+   display: flex;
+   flex-wrap: wrap;
+}
+
+.movies-list .genres span {
+    background-color: #FF6347;
+    color: white;
+    padding: 5px;
+    font-size: 12px;
+    font-family: Arial, Helvetica, sans-serif;
+    border-radius: 5px;
+    margin-right: 5px;
+}
+
+
+
+.movies-list p{
+    display: inline;
+    
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+.movies-list .button-div {
+    padding-top: 5PX;
+    padding-bottom: 5PX;
+   
+    display: flex;
+    justify-content: end
+}
+.movies-list button {
+    background-color: white;
+    margin-right: 20px;
+    border-radius: 5px;
+    position: relative;
+    cursor: pointer;
+    width: 160px;
+}
+.movies-list button i{
+    padding: 5px;
+}
+
+button.search {
+    border-color: #FF6347;
+    color: #FF6347;
+    border: solid #FF6347;
+}
+
+button.search:hover {
+    background-color: #FF6347;
+    color: white;
+}
+
+button.highlight {
+    border-color: #FFD300;
+    color: #FFD300;
+    border: solid #FFD300;
+}
+
+button.highlight:hover {
+    background-color: #FFD300;
+    color: white;
+}
+
+button.highlighted {
+    border-color: #333333;
+    color: #333333;
+    border: solid #333333;
+}
+button.highlighted:hover {
+    background-color: #333333;
+    color: white;
+}
+
+.movies-list p.highlighted {
+    background-image: linear-gradient(to bottom, #FFD300, #FFD300);
+    color: white;
+    display: inline; 
+}
+
+button.delete {
+    border-color: #1E90FF;
+    color: #1E90FF;
+}
+button.delete:hover {
+    background-color: #1E90FF;
+    color: white;   
+}
+

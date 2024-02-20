@@ -1,16 +1,37 @@
 import express from 'express';
 import morgan from 'morgan';
+import { PrismaClient } from '@prisma/client';
+
 import cors from 'cors';
 import { getMovieList, findMovieById } from './movieService.js';
 
 // express init
 const app = express();
-
+const prisma = new PrismaClient();
 // express configurations
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(morgan('dev'));
+
+// test some prisma stuff
+app.get('/movies_p/:id', async (req, res) => {
+	try {
+		const movie = await prisma.details.findUnique({
+			where: {
+				id: parseInt(req.params.id),
+			},
+		});
+		if (movie) {
+			res.status(200).json(movie);
+		} else {
+			res.status(404).send(`Movie id ${req.params.id} not found`);
+		}
+	} catch (err) {
+		console.log(err);
+		res.status(500).json({ err });
+	}
+});
 
 // API endpoints
 
@@ -19,20 +40,39 @@ app.get('/ping', (req, res) => {
 	res.send('pong');
 });
 
-// GET: list of all tweets
-app.get('/movieList', (req, res) => {
-	res.status(200).json(getMovieList());
+// GET: get a list of 10 movies
+app.get('/movieList', async (req, res) => {
+	try {
+		const fetchNum = parseInt(req.query.fetchNum);
+		const movieList = await prisma.details.findMany({
+			take: fetchNum,
+			select: {
+				id: true,
+				title: true,
+				genres: true,
+				popularity: true,
+			},
+		});
+		if (movieList.length === 0) {
+			res.status(404).send('No movies found');
+		} else {
+			res.status(200).json(movieList);
+		}
+	} catch (err) {
+		console.log(err);
+		res.status(500).json({ err });
+	}
 });
 
 app.get('/movie/:id', (req, res) => {
-    const movie = findMovieById(req.params.id);
+	const movie = findMovieById(req.params.id);
 
-    if (movie) {
-        res.status(200).json(movie);
-    } else {
-        res.status(404).send(`Movie id ${req.params.id} not found`);
-    }
-})
+	if (movie) {
+		res.status(200).json(movie);
+	} else {
+		res.status(404).send(`Movie id ${req.params.id} not found`);
+	}
+});
 
 // // POST: creates new tweet
 // app.post("/tweets", (req, res) => {

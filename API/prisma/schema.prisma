@@ -20,4 +20,5 @@ model details {
   popularity   Float?    @db.Float
   vote_average Float?    @db.Float
   vote_count   Int?      @db.UnsignedInt
+  poster_path  String?   @db.VarChar(255)
 }

@@ -45,6 +45,7 @@ app.get('/movieList', async (req, res) => {
 	try {
 		const fetchNum = parseInt(req.query.fetchNum);
 		const movieList = await prisma.details.findMany({
+           
 			take: fetchNum,
 			select: {
 				id: true,
@@ -64,13 +65,21 @@ app.get('/movieList', async (req, res) => {
 	}
 });
 
-app.get('/movie/:id', (req, res) => {
-	const movie = findMovieById(req.params.id);
-
-	if (movie) {
-		res.status(200).json(movie);
-	} else {
-		res.status(404).send(`Movie id ${req.params.id} not found`);
+app.get('/movie/:id', async (req, res) => {
+	try {
+		const movie = await prisma.details.findUnique({
+			where: {    
+                id: parseInt(req.params.id),
+            },
+		});
+		if (movie) {
+			res.status(200).json(movie);
+		} else {
+			res.status(404).send(`Movie id ${req.params.id} not found`);
+		}
+	} catch (err) {
+		console.log(err);
+		res.status(500).json({ err });
 	}
 });
 

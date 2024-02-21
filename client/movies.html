@@ -23,33 +23,40 @@
             </ul>
         </nav>
     </header>
-    <h2>Movie databases</h2>
+    <h2 style="color: red;">Follow READ.me to import the Movie Databases before using</h2>
     <main class="home-page">
 
         <div class='left-column container'>
             <h3>movie list</h3>
             <div class="toolbar">
-                <div class="page-size">
-                    <label for="page-size">Page Size:</label>
-                    <select id="page-size">
-                        <option value="5">5</option>
-                        <option value="10" selected>10</option>
-                        <option value="20">20</option>
-                    </select>
+                <div class="browse">
+              
+                    <div class="page-size">
+                        <label for="page-size">Page Size:</label>
+                        <select id="page-size">
+                            <option value="5">5</option>
+                            <option value="10" selected>10</option>
+                            <option value="20">20</option>
+                        </select>
+                    </div>
+                    <div class="page-number">
+                        Page: <input type="number" min=1 id="page-number" value="1"
+                            onkeydown="return event.keyCode !== 69 && event.keyCode !== 101 && event.key !== '.'" />
+                        / <span id="total-pages">1</span>
+                    </div>
+                    <div class="go-to-page">
+                        <button id="go" onclick="loadingList()">Go</button>
+                    </div>
                 </div>
-                <div class="page-number">
-                    Page: <input type="number"  min=1 id="page-number" value="1" onkeydown="return event.keyCode !== 69 && event.keyCode !== 101 && event.key !== '.'"/>
-                    / <span id="total-pages">1</span>
+              
+                <div class="search">
+                    <div class="search-icon">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <input type="text" id="title-search" placeholder="Search by title">
+                    <input type="number" min="1" id="id-search" placeholder="or by id">
                 </div>
-                <div class="go-to-page">
-                    <button id="go" onclick="loadingList()">Go</button>
-
-                </div>
-
-                <div class="search-bar">
-                    <input type="text" id="search-bar" placeholder="Input id or title">
-                    <button id="search-button">Search</button>
-                </div>
+                
             </div>
             <ul class="movies-list">
                 <li class='column-name'>

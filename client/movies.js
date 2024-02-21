@@ -38,9 +38,9 @@ function generateGenresColor() {
 	return colorMap;
 }
 const genresColor = generateGenresColor();
-const totalMovieCount = 0;
+// const totalMovieCount = 0;
 
-//
+//when browse, update the total page number
 async function renderMovieListToolbar(totalMovieCount, fetchNum) {
 	const totalPage = document.getElementById('total-pages');
 	const maxPage = Math.ceil(parseInt(totalMovieCount.count) / fetchNum);
@@ -51,6 +51,7 @@ async function renderMovieListToolbar(totalMovieCount, fetchNum) {
 	currentPage.style.width = `${maxPage.toString().length + 1}em`;
 }
 
+// make the current page number not exceed the total page number
 function updatePageNumber() {
 	const currentPage = document.getElementById('page-number');
 	const maxPage = document.getElementById('total-pages').textContent;
@@ -60,17 +61,13 @@ function updatePageNumber() {
 	}
 }
 
-document
-	.getElementById('page-number')
-	.addEventListener('change', updatePageNumber);
-
-document.getElementById('page-size').addEventListener('change', () => {
-    const currentPage = document.getElementById('page-number');
-    currentPage.value = 1;
-	loadingList(), updatePageNumber();
-});
+function resetSearchBar() {
+	document.getElementById('title-search').value = '';
+	document.getElementById('id-search').value = '';
+}
 
 // create li element for each movie
+
 async function renderMovieList(movieList) {
 	const movieListElement = document.querySelector('ul.movies-list');
 	movieListElement.innerHTML = `
@@ -80,7 +77,34 @@ async function renderMovieList(movieList) {
       <div>Genres</div>
     </li>
     <hr>
-  `;
+    `;
+
+	// if the movie list is empty, display the empty result
+
+	if (movieList.length === 0) {
+		const emptyResult = document.createElement('div');
+		emptyResult.classList.add('empty-result');
+		emptyResult.innerHTML = `
+        <img src="./resources/no_movies.png" alt="empty" />
+        <p>No movie found</p>
+        <div class="more-info"><p></p></div>
+        `;
+		if (
+			document.getElementById('title-search').value ||
+			document.getElementById('id-search').value
+		) {
+			emptyResult.querySelector('.more-info p').innerHTML =
+				'No movie found with the given title or id';
+		} else {
+			const p = emptyResult.querySelector('.more-info p');
+			p.style.color = '#1E90FF';
+			p.innerHTML =
+				'Follow READ.me to import the Movie Databases before using';
+		}
+		movieListElement.appendChild(emptyResult);
+		return;
+	}
+
 	for (const movie of movieList) {
 		const movieItem = createMovieItem(movie);
 		document
@@ -193,14 +217,13 @@ function renderMovieDetails(movie) {
 		const posterDiv = document.createElement('div');
 		posterDiv.classList.add('poster');
 		const poster_path = movie.poster_path;
-		console.log(poster_path);
+
 		let posterURL;
 		if (!poster_path.startsWith('http')) {
 			posterURL = img_base_url + img_size + poster_path;
 		} else {
 			posterURL = poster_path;
 		}
-		console.log(posterURL);
 
 		const tooltip = document.createElement('span');
 		tooltip.classList.add('tooltip');
@@ -225,6 +248,7 @@ function renderMovieDetails(movie) {
             </blockquote>
             <p class='overview'>${movie.overview}</p>
             <div class='produce-info'>
+                <span>Id: ${movie.id}</span>
                 <span>Released Date: ${movie.release_date.substring(
 					0,
 					10
@@ -250,7 +274,7 @@ async function loadingList() {
 		const fetchNum = document.getElementById('page-size').value;
 		const fetchPage = document.getElementById('page-number').value;
 		const params = `?fetchNum=${fetchNum}&fetchPage=${fetchPage}`;
-		let fetchMovieList = fetch(baseURL + movieListEndPoint + params); 
+		let fetchMovieList = fetch(baseURL + movieListEndPoint + params);
 		const movieCountEndPoint = '/movieCount';
 		let fetchMovieCount = fetch(baseURL + movieCountEndPoint);
 
@@ -272,6 +296,64 @@ async function loadingList() {
 	}
 }
 
+async function loadMovieSearchList() {
+	try {
+		const movieListEndPoint = '/movieList';
+		const movieTitle = document.getElementById('title-search').value.trim();
+		const movieId = document.getElementById('id-search').value;
+		let fetchMovieList;
+		if (movieTitle) {
+			fetchMovieList = await fetch(
+				baseURL + movieListEndPoint + `?movieTitle=${movieTitle}`
+			);
+		} else {
+			fetchMovieList = await fetch(
+				baseURL + movieListEndPoint + `?movieId=${movieId}`
+			);
+		}
+		const movieSearchList = await fetchMovieList.json();
+		renderMovieList(movieSearchList);
+	} catch (error) {
+		console.error('Error:', error.message);
+	}
+}
+
+function setToolBar() {
+	// function on browse button click, update the movie list
+	document
+		.getElementById('page-number')
+		.addEventListener('change', updatePageNumber);
+
+	document.getElementById('page-size').addEventListener('change', () => {
+		const currentPage = document.getElementById('page-number');
+		currentPage.value = 1;
+		loadingList(), updatePageNumber();
+	});
+
+	document.querySelector('.toolbar .browse').addEventListener('click', () => {
+		resetSearchBar();
+	});
+
+	// function on search bar change, update the movie list
+	document.getElementById('title-search').addEventListener('focus', () => {
+		document.getElementById('id-search').value = '';
+	});
+	document.getElementById('title-search').addEventListener('input', () => {
+		if (document.getElementById('title-search').value.trim() != '') {
+			loadMovieSearchList();
+		}
+	});
+
+	document.getElementById('id-search').addEventListener('focus', () => {
+		document.getElementById('title-search').value = '';
+	});
+	document.getElementById('id-search').addEventListener('input', () => {
+		if (document.getElementById('id-search').value != '') {
+			loadMovieSearchList();
+		}
+	});
+}
+
 async function getMovieDetails(movieId) {
 	try {
 		const movieEndPoint = `/movie/${movieId}`;
@@ -284,3 +366,4 @@ async function getMovieDetails(movieId) {
 }
 
 document.addEventListener('DOMContentLoaded', loadingList);
+document.addEventListener('DOMContentLoaded', setToolBar);

@@ -3,7 +3,7 @@ import morgan from 'morgan';
 import { PrismaClient } from '@prisma/client';
 
 import cors from 'cors';
-import { getMovieList, findMovieById } from './movieService.js';
+// import { getMovieList, findMovieById } from './movieService.js';
 
 // express init
 const app = express();
@@ -14,24 +14,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(morgan('dev'));
 
-// test some prisma stuff
-app.get('/movies_p/:id', async (req, res) => {
-	try {
-		const movie = await prisma.details.findUnique({
-			where: {
-				id: parseInt(req.params.id),
-			},
-		});
-		if (movie) {
-			res.status(200).json(movie);
-		} else {
-			res.status(404).send(`Movie id ${req.params.id} not found`);
-		}
-	} catch (err) {
-		console.log(err);
-		res.status(500).json({ err });
-	}
-});
+
 
 // API endpoints
 
@@ -40,12 +23,24 @@ app.get('/ping', (req, res) => {
 	res.send('pong');
 });
 
+// Get: get the total number of movies
+app.get('/movieCount', async (req, res) => {
+    try {
+        const count = await prisma.details.count();
+        res.status(200).json({ count });
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ err });
+    }
+});
+
 // GET: get a list of 10 movies
 app.get('/movieList', async (req, res) => {
 	try {
 		const fetchNum = parseInt(req.query.fetchNum);
+        const fetchPage = parseInt(req.query.fetchPage);
 		const movieList = await prisma.details.findMany({
-           
+            skip: fetchNum * (fetchPage - 1),
 			take: fetchNum,
 			select: {
 				id: true,

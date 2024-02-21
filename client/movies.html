@@ -4,7 +4,7 @@
 <head>
     <title>movie pages</title>
     <link rel="stylesheet" type="text/css" href="style.css">
-    
+
 </head>
 
 <body>
@@ -25,17 +25,40 @@
     </header>
     <h2>Movie databases</h2>
     <main class="home-page">
-        
+
         <div class='left-column container'>
             <h3>movie list</h3>
+            <div class="toolbar">
+                <div class="page-size">
+                    <label for="page-size">Page Size:</label>
+                    <select id="page-size">
+                        <option value="5">5</option>
+                        <option value="10" selected>10</option>
+                        <option value="20">20</option>
+                    </select>
+                </div>
+                <div class="page-number">
+                    Page: <input type="number"  min=1 id="page-number" value="1" onkeydown="return event.keyCode !== 69 && event.keyCode !== 101 && event.key !== '.'"/>
+                    / <span id="total-pages">1</span>
+                </div>
+                <div class="go-to-page">
+                    <button id="go" onclick="loadingList()">Go</button>
+
+                </div>
+
+                <div class="search-bar">
+                    <input type="text" id="search-bar" placeholder="Input id or title">
+                    <button id="search-button">Search</button>
+                </div>
+            </div>
             <ul class="movies-list">
-                <li class = 'column-name'>
+                <li class='column-name'>
                     <div>Title</div>
                     <div>Hot</div>
                     <div>Genres</div>
                 </li>
                 <hr>
-               
+
             </ul>
 
 
@@ -47,9 +70,18 @@
             <div class='instruction'>
                 <h3>instruction</h3>
                 <ul>
-                    <li><p>Click <strong style="color:#FF6347;">Search in google</strong> to open a new widow to search the bold word of this news</p></li>
-                    <li><p>Click <strong style="color:#FFD300;">Highlight the news</strong> to highlight the sentence of this news, you can <strong>Remove the highlight</strong> later</p></li>
-                    <li><p>Click <strong style="color:#1E90FF;">Delete this news</strong> will remove the current news from the movies-list</p></li>
+                    <li>
+                        <p>Click <strong style="color:#FF6347;">Search in google</strong> to open a new widow to search
+                            the bold word of this news</p>
+                    </li>
+                    <li>
+                        <p>Click <strong style="color:#FFD300;">Highlight the news</strong> to highlight the sentence of
+                            this news, you can <strong>Remove the highlight</strong> later</p>
+                    </li>
+                    <li>
+                        <p>Click <strong style="color:#1E90FF;">Delete this news</strong> will remove the current news
+                            from the movies-list</p>
+                    </li>
                 </ul>
             </div>
 

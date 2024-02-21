@@ -1,4 +1,6 @@
 const baseURL = 'http://localhost:8001';
+const img_base_url = 'http://image.tmdb.org/t/p/';
+const img_size = 'w185';
 
 const colors = [
 	'#3498db', // Blue
@@ -36,17 +38,55 @@ function generateGenresColor() {
 	return colorMap;
 }
 const genresColor = generateGenresColor();
+const totalMovieCount = 0;
+
+//
+async function renderMovieListToolbar(totalMovieCount, fetchNum) {
+	const totalPage = document.getElementById('total-pages');
+	const maxPage = Math.ceil(parseInt(totalMovieCount.count) / fetchNum);
+	totalPage.textContent = maxPage;
+	const currentPage = document.getElementById('page-number');
+	currentPage.setAttribute('max', maxPage);
+	currentPage.setAttribute('min', 1);
+	currentPage.style.width = `${maxPage.toString().length + 1}em`;
+}
+
+function updatePageNumber() {
+	const currentPage = document.getElementById('page-number');
+	const maxPage = document.getElementById('total-pages').textContent;
+
+	if (parseInt(currentPage.value) > parseInt(maxPage)) {
+		currentPage.value = maxPage;
+	}
+}
+
+document
+	.getElementById('page-number')
+	.addEventListener('change', updatePageNumber);
+
+document.getElementById('page-size').addEventListener('change', () => {
+    const currentPage = document.getElementById('page-number');
+    currentPage.value = 1;
+	loadingList(), updatePageNumber();
+});
 
 // create li element for each movie
-function renderMovieList(movieList) {
+async function renderMovieList(movieList) {
+	const movieListElement = document.querySelector('ul.movies-list');
+	movieListElement.innerHTML = `
+    <li class='column-name'>
+      <div>Title</div>
+      <div>Hot</div>
+      <div>Genres</div>
+    </li>
+    <hr>
+  `;
 	for (const movie of movieList) {
-		console.log(movie.id);
 		const movieItem = createMovieItem(movie);
 		document
 			.querySelector('ul.movies-list')
 			.appendChild(movieItem)
 			.insertAdjacentElement('afterend', document.createElement('hr'));
-		console.log(movieItem, movie.id, 'finished');
 	}
 
 	function createMovieItem(movie) {
@@ -89,7 +129,6 @@ function renderMovieList(movieList) {
 	}
 
 	function createGenreDiv(genres) {
-		console.log('enter createGenreDiv');
 		const genresDiv = document.createElement('div');
 		genresDiv.classList.add('genres');
 
@@ -100,7 +139,7 @@ function renderMovieList(movieList) {
 			genreSpan.dataset.genreId = genre.id;
 			genresDiv.appendChild(genreSpan);
 		});
-		console.log('exit createGenreDiv');
+
 		return genresDiv;
 	}
 
@@ -120,9 +159,6 @@ function renderMovieList(movieList) {
 			let movieList = event.currentTarget.closest('.movie-item');
 			let movieId = movieList.dataset.movieId;
 
-			// console.log(
-			// 	event.currentTarget.closest('.movie-item').dataset.movieId,
-			// );
 			const currentIcon = event.currentTarget.querySelector('i');
 			currentIcon.classList.toggle('fa-angle-down');
 			currentIcon.classList.toggle('fa-angle-up');
@@ -148,21 +184,89 @@ function renderMovieDetails(movie) {
 	const movieDetails = document.createElement('div');
 	movieDetails.classList.add('movie-details');
 	movieDetails.dataset.movieId = movie.id;
-	movieDetails.innerText = JSON.stringify(movie, null, 2);
+	movieDetails.appendChild(createPosterDiv());
+	movieDetails.appendChild(createInfoDiv());
 
 	return movieDetails;
+
+	function createPosterDiv() {
+		const posterDiv = document.createElement('div');
+		posterDiv.classList.add('poster');
+		const poster_path = movie.poster_path;
+		console.log(poster_path);
+		let posterURL;
+		if (!poster_path.startsWith('http')) {
+			posterURL = img_base_url + img_size + poster_path;
+		} else {
+			posterURL = poster_path;
+		}
+		console.log(posterURL);
+
+		const tooltip = document.createElement('span');
+		tooltip.classList.add('tooltip');
+		tooltip.textContent = 'Click to visit homepage';
+		posterDiv.appendChild(tooltip);
+
+		posterDiv.style.backgroundImage = `url(${posterURL})`;
+		posterDiv.addEventListener('click', function () {
+			window.open(movie.homepage, '_blank');
+		});
+		return posterDiv;
+	}
+
+	function createInfoDiv() {
+		const contentDiv = document.createElement('div');
+		contentDiv.classList.add('info');
+		contentDiv.innerHTML = `            
+            <blockquote>
+                &ldquo;
+                ${movie.tagline}
+                &rdquo;
+            </blockquote>
+            <p class='overview'>${movie.overview}</p>
+            <div class='produce-info'>
+                <span>Released Date: ${movie.release_date.substring(
+					0,
+					10
+				)}</span>
+                <div><i class="fa-regular fa-thumbs-up"></i>${
+					movie.vote_count
+				}</div>
+                <div><i class="fa-regular fa-star"></i>${
+					movie.vote_average
+				}</div>
+            </div>
+            
+            `;
+		return contentDiv;
+	}
 }
 
+// retrieve the list of movies from the server
+// as well as the total number of movies
 async function loadingList() {
 	try {
 		const movieListEndPoint = '/movieList';
-		const params = '?fetchNum=10';
+		const fetchNum = document.getElementById('page-size').value;
+		const fetchPage = document.getElementById('page-number').value;
+		const params = `?fetchNum=${fetchNum}&fetchPage=${fetchPage}`;
+		let fetchMovieList = fetch(baseURL + movieListEndPoint + params); 
+		const movieCountEndPoint = '/movieCount';
+		let fetchMovieCount = fetch(baseURL + movieCountEndPoint);
 
-		let fetchMovieList = await fetch(baseURL + movieListEndPoint + params); //
-		movieList = await fetchMovieList.json();
-		console.log(movieList);
-		//console.log(movieList);
+		let [movieListResponse, movieCountResponse] = await Promise.all([
+			fetchMovieList,
+			fetchMovieCount,
+		]);
+
+		let [movieList, totalMovieCount] = await Promise.all([
+			movieListResponse.json(),
+			movieCountResponse.json(),
+		]);
+
 		renderMovieList(movieList);
+		// get the total number of movies
+		renderMovieListToolbar(totalMovieCount, fetchNum);
 	} catch (error) {
 		console.error('Error:', error.message);
 	}
@@ -170,14 +274,10 @@ async function loadingList() {
 
 async function getMovieDetails(movieId) {
 	try {
-		if (details[movieId]) {
-			return details[movieId];
-		}
 		const movieEndPoint = `/movie/${movieId}`;
 		let movie = await fetch(baseURL + movieEndPoint);
 		movie = await movie.json();
-		details[movieId] = movie;
-		return details[movieId];
+		return movie;
 	} catch (error) {
 		console.error('Error:', error.message);
 	}

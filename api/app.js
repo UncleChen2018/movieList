@@ -123,22 +123,34 @@ app.get('/movie/:id', async (req, res) => {
 	}
 });
 
-// // POST: creates new tweet
-// app.post("/tweets", (req, res) => {
-//   const newTweet = createTweet(req.body.text, req.body.username);
-//   res.status(201).json(newTweet);
-// });
-
-// // GET: return Tweet with :id
-// app.get("/tweets/:id", (req, res) => {
-//   const tweet = findTweetById(req.params.id);
-
-//   if (tweet) {
-//     res.status(200).json(tweet);
-//   } else {
-//     res.status(404).send(`Tweet id ${req.params.id} not found`);
-//   }
-// });
+// post: creates a new movie
+app.post('/movie', async (req, res) => {
+    try {
+        if (!req.body) {
+            throw new Error('valid data is required');
+        }
+        const data = {
+            title: req.body.title,
+            popularity: parseFloat(req.body.popularity),
+            homepage: req.body.homepage,
+            poster_path: req.body.poster_path,
+            tagline: req.body.tagline,
+            overview: req.body.overview,
+            release_date: req.body.release_date + 'T00:00:00Z',
+            vote_count: parseInt(req.body.vote_count),
+            vote_average: parseFloat(req.body.vote_average),
+        };
+        const movie = await prisma.details.create({
+            data: data,
+        });
+        if (movie) {
+            res.status(201).json(movie);
+        }
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ err: err.message });
+    }
+});
 
 // PUT: updates movie with :id
 app.put('/movie/:id', async (req, res) => {

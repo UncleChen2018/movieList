@@ -364,10 +364,10 @@ function createEditForm(movie, order = 'update') {
 		}' required />
       
         home page (start with http(s)) <input type='text' name='homepage' pattern="https?://.+" 
-        value='${movie && movie.homepage ? movie.homepage : ''}' />
+        value='${movie && movie.homepage ? movie.homepage : 'https://developer.themoviedb.org/docs/getting-started'}' />
         poster_path (start with http(s)) <input type='text' name='poster_path' pattern ="https?://.+"  
         value='${
-			movie && movie.poster_path ? getPosterURL(movie.poster_path) : ''
+			movie && movie.poster_path ? getPosterURL(movie.poster_path) : 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/79/Zack_Snyder_by_Gage_Skidmore_2.jpg/330px-Zack_Snyder_by_Gage_Skidmore_2.jpg'
 		}' />
     </div>
     <div class='info'>

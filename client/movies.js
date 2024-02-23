@@ -23,10 +23,9 @@ const colors = [
 	'#d35400', // Pumpkin
 	'#95a5a6', // Concrete
 ];
-const ids = [
-	28, 12, 16, 35, 80, 99, 18, 10751, 14, 36, 27, 10402, 9648, 10749, 878,
-	10770, 53, 10752, 37,
-];
+
+
+const ids = genres.map((genre) => genre.id);
 
 let details = [];
 
@@ -66,10 +65,18 @@ function resetSearchBar() {
 	document.getElementById('id-search').value = '';
 }
 
-// create li element for each movie
+function getPosterURL(poster_path) {
+	let posterURL;
+	if (!poster_path.startsWith('http')) {
+		posterURL = img_base_url + img_size + poster_path;
+	} else {
+		posterURL = poster_path;
+	}
+	return posterURL;
+}
 
 async function renderMovieList(movieList) {
-	const movieListElement = document.querySelector('ul.movies-list');
+	const movieListElement = document.querySelector('ol.movies-list');
 	movieListElement.innerHTML = `
     <li class='column-name'>
       <div>Title</div>
@@ -106,50 +113,60 @@ async function renderMovieList(movieList) {
 	}
 
 	for (const movie of movieList) {
-		const movieItem = createMovieItem(movie);
-		document
-			.querySelector('ul.movies-list')
-			.appendChild(movieItem)
-			.insertAdjacentElement('afterend', document.createElement('hr'));
-	}
-
-	function createMovieItem(movie) {
 		const movieItem = document.createElement('li');
 		movieItem.classList.add('movie-item');
 		movieItem.dataset.movieId = movie.id;
-		movieItem.appendChild(createTitleDiv(movie.title));
-		movieItem.appendChild(createPopularityDiv(movie.popularity));
-		movieItem.appendChild(createGenreDiv(movie.genres));
-		movieItem.appendChild(createFoldingDiv());
-		return movieItem;
+		movieItem.appendChild(renderMovieHead(movie));
+
+		document
+			.querySelector('ol.movies-list')
+			.appendChild(movieItem)
+			.appendChild(document.createElement('hr'));
 	}
+}
+
+function getHotFromPopularity(popularity) {
+	let fires = 1;
+	if (popularity > 99) {
+		fires = 5;
+	} else if (popularity > 80) {
+		fires = 4;
+	} else if (popularity > 60) {
+		fires = 3;
+	} else if (popularity > 40) {
+		fires = 2;
+	}
+	return fires;
+}
+
+function createPopularityDiv(popularity) {
+	const popularityDiv = document.createElement('div');
+	popularityDiv.classList.add('popularity');
+	const fires = getHotFromPopularity(popularity);
+	for (let i = 0; i < fires; i++) {
+		const star = document.createElement('i');
+		star.classList.add('fa-solid', 'fa-fire-flame-curved');
+		popularityDiv.appendChild(star);
+	}
+	return popularityDiv;
+}
+
+function renderMovieHead(movie) {
+	const movieHead = document.createElement('div');
+
+	movieHead.classList.add('movie-head');
+	movieHead.dataset.movieId = movie.id;
+	movieHead.appendChild(createTitleDiv(movie.title));
+	movieHead.appendChild(createPopularityDiv(movie.popularity));
+	movieHead.appendChild(createGenreDiv(movie.genres));
+	movieHead.appendChild(createFoldingDiv());
+	return movieHead;
 
 	function createTitleDiv(title) {
 		const titleDiv = document.createElement('div');
 		titleDiv.classList.add('movie-title');
 		titleDiv.textContent = title;
 		return titleDiv;
-	}
-
-	function createPopularityDiv(popularity) {
-		const popularityDiv = document.createElement('div');
-		popularityDiv.classList.add('popularity');
-		let fires = 1;
-		if (popularity > 99) {
-			fires = 5;
-		} else if (popularity > 80) {
-			fires = 4;
-		} else if (popularity > 60) {
-			fires = 3;
-		} else if (popularity > 40) {
-			fires = 2;
-		}
-		for (let i = 0; i < fires; i++) {
-			const star = document.createElement('i');
-			star.classList.add('fa-solid', 'fa-fire-flame-curved');
-			popularityDiv.appendChild(star);
-		}
-		return popularityDiv;
 	}
 
 	function createGenreDiv(genres) {
@@ -180,7 +197,7 @@ async function renderMovieList(movieList) {
 			let status = icon.classList.contains('fa-angle-down')
 				? 'folded'
 				: 'unfolded';
-			let movieList = event.currentTarget.closest('.movie-item');
+			let movieList = event.currentTarget.closest('.movie-head');
 			let movieId = movieList.dataset.movieId;
 
 			const currentIcon = event.currentTarget.querySelector('i');
@@ -211,29 +228,39 @@ function renderMovieDetails(movie) {
 	movieDetails.appendChild(createPosterDiv());
 	movieDetails.appendChild(createInfoDiv());
 
+	//update the title
+	const movieHead = document.querySelector(
+		`.movie-head[data-movie-id="${movie.id}"]`
+	);
+	movieHead.querySelector('.movie-title').textContent = movie.title;
+	movieHead
+		.querySelector('.popularity')
+		.replaceWith(createPopularityDiv(movie.popularity));
+	//update the popularity
+
 	return movieDetails;
+
+	function openHomepage() {
+		window.open(movie.homepage, '_blank');
+	}
 
 	function createPosterDiv() {
 		const posterDiv = document.createElement('div');
 		posterDiv.classList.add('poster');
 		const poster_path = movie.poster_path;
 
-		let posterURL;
-		if (!poster_path.startsWith('http')) {
-			posterURL = img_base_url + img_size + poster_path;
-		} else {
-			posterURL = poster_path;
-		}
+		let posterURL = getPosterURL(poster_path);
 
 		const tooltip = document.createElement('span');
 		tooltip.classList.add('tooltip');
 		tooltip.textContent = 'Click to visit homepage';
 		posterDiv.appendChild(tooltip);
+		
+		posterDiv.style.backgroundImage = `url(${posterURL}), url('./resources/no preview.png')`;
+		
 
-		posterDiv.style.backgroundImage = `url(${posterURL})`;
-		posterDiv.addEventListener('click', function () {
-			window.open(movie.homepage, '_blank');
-		});
+		posterDiv.addEventListener('click', openHomepage);
+
 		return posterDiv;
 	}
 
@@ -262,8 +289,156 @@ function renderMovieDetails(movie) {
             </div>
             
             `;
+		contentDiv.appendChild(createManageDiv());
 		return contentDiv;
 	}
+
+	function createManageDiv() {
+		const manageDiv = document.createElement('div');
+		manageDiv.classList.add('manage-panel');
+		manageDiv.innerHTML = `
+            <button class='edit'>Edit</button>
+            <button class='delete'>Delete</button>
+        `;
+
+		manageDiv
+			.querySelector('.edit')
+			.addEventListener('click', editMovieDetails);
+		manageDiv
+			.querySelector('.delete')
+			.addEventListener('click', deleteMovieDetails);
+		return manageDiv;
+	}
+}
+
+async function editMovieDetails(event) {
+	const movieDetails = event.currentTarget.closest('.movie-details');
+
+	const movieId = movieDetails.dataset.movieId;
+	console.log(movieId);
+	const movie = await getMovieDetails(movieId);
+	const editForm = createEditForm(movie);
+	movieDetails.replaceWith(editForm);
+
+}
+
+function createEditForm(movie) {
+	const editForm = document.createElement('form');
+	editForm.classList.add('movie-details');
+	editForm.dataset.movieId = movie.id;
+	editForm.innerHTML = `
+        <div class='poster editing'>  
+        Id (can not change): <input type='text' name='id' readonly value='${
+			movie.id
+		}' />
+        title<input type='text' name='title' value='${movie.title}' required  />
+            hot<input type='number' name='popularity' min="0" step="0.001" value='${
+				movie.popularity
+			}' required  />
+            <label for="genres">Genres(can not change):</label>
+<input type="text" name="genres" list="genreList" readonly value="${movie.genres
+		.map((genre) => genre.name)
+		.join(', ')}"/>
+
+<!-- Datalist containing options based on your array of genres -->
+<datalist id="genreList">
+    ${genres.map((genre) => `<option value="${genre.name}"></option>`).join('')}
+</datalist>
+        
+            home page(start with http(s))<input type='text' name='homepage' pattern="https?://.+" 
+            value='${movie.homepage}' />
+            poster_path(start with http(s))<input type='text' name='poster_path' pattern ="https?://.+"  value='${getPosterURL(
+				movie.poster_path
+			)}' />
+        </div>
+        <div class='info' >
+           
+            
+            tagline<input type='text' name='tagline' value='${movie.tagline}' />
+            <textarea name='overview' required style='height:60px;'>${
+				movie.overview
+			}</textarea>
+
+            release date<input type='date' name='release_date' value='${movie.release_date.substring(
+				0,
+				10
+			)}' />
+            <div style='display: flex; justify-content: space-between;align-items:baseline'>
+            vote count<input type='number' name='vote_count' value='${
+				movie.vote_count
+			}' />
+            vote average <input type='number' name='vote_average' value='${
+				movie.vote_average
+			}' step="0.001" max="10" min="0" />
+            </div>
+            <div style='display: flex; justify-content: space-around;'>
+            <button type='submit'>Save</button>
+            <button type='button' class='cancel'>Cancel</button>
+            </div>
+        </div>
+    `;
+
+	editForm.addEventListener('submit', async function (event) {
+		event.preventDefault();
+		const formData = new FormData(editForm);
+		const updatedMovie = Object.fromEntries(formData);
+		const movieId = editForm.dataset.movieId;
+		const movie = await getMovieDetails(movieId);
+		console.log(movie);
+		console.log(updatedMovie);
+		const retMovie = await putUpdateMovieDetails(updatedMovie);
+
+		editForm.replaceWith(renderMovieDetails(retMovie));
+	});
+	editForm.querySelector('.cancel').addEventListener('click', function () {
+		editForm.replaceWith(renderMovieDetails(movie));
+	});
+	return editForm;
+}
+
+// update the movie details
+// and render the updated movie details
+async function putUpdateMovieDetails(updatedData) {
+	try {
+		console.log(updatedData);
+		const movieId = updatedData.id;
+		const movieEndPoint = `/movie/${movieId}`;
+		const putRequestConfig = {
+			method: 'PUT',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify(updatedData),
+		};
+		console.log(baseURL + movieEndPoint);
+		const response = await fetch(baseURL + movieEndPoint, putRequestConfig);
+		const movie = await response.json();
+		return movie;
+	} catch (error) {
+		console.error('Error:', error.message);
+	}
+}
+
+async function deleteMovieDetails(event) {
+	const movieId =
+		event.currentTarget.closest('.movie-details').dataset.movieId;
+	const confirmDelete = window.confirm('Are you sure to delete this movie?');
+
+	if (confirmDelete) {
+		const movieEndPoint = `/movie/${movieId}`;
+        const deleteRequestConfig = {
+            method: 'DELETE',
+        };
+        const response = await fetch(baseURL + movieEndPoint, deleteRequestConfig);
+        const movie = await response.json();
+        console.log(movie);
+        const movieDetails = document.querySelector(
+            `.movie-item[data-movie-id="${movieId}"]`
+        );
+        movieDetails.remove();
+
+	} 
+	
 }
 
 // retrieve the list of movies from the server

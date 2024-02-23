@@ -23,7 +23,7 @@ DROP TABLE IF EXISTS `details`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `details` (
-  `id` int unsigned NOT NULL,
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
   `genres` json DEFAULT NULL,
   `title` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
   `overview` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
@@ -36,7 +36,7 @@ CREATE TABLE `details` (
   `vote_count` int unsigned DEFAULT NULL,
   `poster_path` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='part of the details of any movie';
+) ENGINE=InnoDB AUTO_INCREMENT=1240374 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='part of the details of any movie';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -58,4 +58,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-02-19 21:17:36
+-- Dump completed on 2024-02-23  0:44:24

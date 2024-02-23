@@ -61,6 +61,9 @@ app.get('/movieList', async (req, res) => {
 							contains: movieTitle,
 						},
 					},
+                    orderBy: {
+                        id: 'desc', 
+                      },
 				});
 			} else {
 				movieList = await prisma.details.findMany({
@@ -79,6 +82,9 @@ app.get('/movieList', async (req, res) => {
 				throw new Error('valid fetchPage is required');
 			}
 			movieList = await prisma.details.findMany({
+                orderBy: {
+                    id: 'desc', 
+                  },
 				skip: fetchNum * (fetchPage - 1),
 				take: fetchNum,
 				select: {

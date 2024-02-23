@@ -65,6 +65,9 @@ function resetSearchBar() {
 }
 
 function getPosterURL(poster_path) {
+    if (!poster_path) {
+        return './resources/no preview.png';
+    }
 	let posterURL;
 	if (!poster_path.startsWith('http')) {
 		posterURL = img_base_url + img_size + poster_path;
@@ -176,7 +179,7 @@ function renderMovieHead(movie) {
 		if (!genres || genres.length === 0) {
 			const genreSpan = document.createElement('span');
 			genreSpan.textContent = 'Unknown';
-			genreSpan.style.backgroundColor = genresColor[0];
+			genreSpan.style.backgroundColor = 'black';
 			genresDiv.appendChild(genreSpan);
 		} else {
 			genres.forEach((genre) => {
@@ -228,7 +231,7 @@ function renderMovieHead(movie) {
 	}
 }
 
-function renderMovieDetails(movie) {
+function renderMovieDetails(movie, order = 'update') {
 	const movieDetails = document.createElement('div');
 	movieDetails.classList.add('movie-details');
 	movieDetails.dataset.movieId = movie.id;
@@ -236,14 +239,24 @@ function renderMovieDetails(movie) {
 	movieDetails.appendChild(createInfoDiv());
 
 	//update the title
-	const movieHead = document.querySelector(
-		`.movie-head[data-movie-id="${movie.id}"]`
-	);
-	movieHead.querySelector('.movie-title').textContent = movie.title;
-	movieHead
-		.querySelector('.popularity')
-		.replaceWith(createPopularityDiv(movie.popularity));
+	if (order === 'update') {
+		const movieHead = document.querySelector(
+			`.movie-head[data-movie-id="${movie.id}"]`
+		);
+		movieHead.querySelector('.movie-title').textContent = movie.title;
+		movieHead
+			.querySelector('.popularity')
+			.replaceWith(createPopularityDiv(movie.popularity));
+	}
 	//update the popularity
+    if (order === 'create') {
+        const movieListHeader = document.querySelector('ol.movies-list .list-header');
+        const newMovie = document.createElement('li');
+        newMovie.classList.add('movie-item');
+        newMovie.dataset.movieId = movie.id;
+        newMovie.appendChild(renderMovieHead(movie));
+        movieListHeader.insertAdjacentElement('afterend', newMovie);
+    }
 
 	return movieDetails;
 
@@ -285,7 +298,7 @@ function renderMovieDetails(movie) {
                 <span>Released Date: ${
 					movie.release_date
 						? movie.release_date.substring(0, 10)
-						: 'Unknown'
+						: 'Not provided'
 				}</span>
                 <div><i class="fa-regular fa-thumbs-up"></i>${
 					movie.vote_count
@@ -340,46 +353,42 @@ function createEditForm(movie, order = 'update') {
 	}
 	editForm.innerHTML = `
     <div class='poster editing'>  
-        Id (can not change): <input type='text' name='id' readonly value='${
-			movie ? movie.id : ''
+        Id (cannot change): <input type='text' name='id' readonly value='${
+			movie && movie.id ? movie.id : ''
 		}' />
         title<input type='text' name='title' value='${
-			movie ? movie.title : ''
+			movie && movie.title ? movie.title : ''
 		}' required />
         hot<input type='number' name='popularity' min="0" step="0.001" value='${
-			movie ? movie.popularity : ''
+			movie && movie.popularity ? movie.popularity : ''
 		}' required />
-        <label for="genres">Genres(can not change):</label>
-        <input type="text" name="genres" list="genreList" readonly value="${
-			movie ? movie.genres.map((genre) => genre.name).join(', ') : ''
-		}"/>
-        <!-- Datalist containing options based on your array of genres -->
-        <datalist id="genreList">
-            ${genres
-				.map((genre) => `<option value="${genre.name}"></option>`)
-				.join('')}
-        </datalist>
-        home page(start with http(s))<input type='text' name='homepage' pattern="https?://.+" 
-        value='${movie ? movie.homepage : ''}' />
-        poster_path(start with http(s))<input type='text' name='poster_path' pattern ="https?://.+"  
-        value='${movie ? getPosterURL(movie.poster_path) : ''}' />
+      
+        home page (start with http(s)) <input type='text' name='homepage' pattern="https?://.+" 
+        value='${movie && movie.homepage ? movie.homepage : ''}' />
+        poster_path (start with http(s)) <input type='text' name='poster_path' pattern ="https?://.+"  
+        value='${
+			movie && movie.poster_path ? getPosterURL(movie.poster_path) : ''
+		}' />
     </div>
     <div class='info'>
-        tagline<input type='text' name='tagline' value='${
-			movie ? movie.tagline : ''
+        tagline <input type='text' name='tagline' value='${
+			movie && movie.tagline ? movie.tagline : ''
 		}' />
         <textarea name='overview' required style='height:60px;'>${
-			movie ? movie.overview : ''
+			movie && movie.overview ? movie.overview : ''
 		}</textarea>
-        release date<input type='date' name='release_date' value='${
-			movie ? movie.release_date.substring(0, 10) : ''
+        release date <input type='date' name='release_date'
+        required value='${
+			movie && movie.release_date
+				? movie.release_date.substring(0, 10)
+				: ''
 		}' />
         <div style='display: flex; justify-content: space-between;align-items:baseline'>
-            vote count<input type='number' name='vote_count' value='${
-				movie ? movie.vote_count : ''
+            vote count <input type='number' name='vote_count' value='${
+				movie && movie.vote_count ? movie.vote_count : ''
 			}' />
             vote average <input type='number' name='vote_average' value='${
-				movie ? movie.vote_average : ''
+				movie && movie.vote_average ? movie.vote_average : ''
 			}' step="0.001" max="10" min="0" />
         </div>
         <div style='display: flex; justify-content: space-around;'>
@@ -398,13 +407,13 @@ function createEditForm(movie, order = 'update') {
 			const movieId = editForm.dataset.movieId;
 			//const movie = await getMovieDetails(movieId);
 			retMovie = await putUpdateMovieDetails(movieData);
+			editForm.replaceWith(renderMovieDetails(retMovie));
 		}
 		if (order === 'create') {
 			retMovie = await postMovieDetails(movieData);
 			console.log(retMovie);
+			editForm.replaceWith(renderMovieDetails(retMovie, 'create'));
 		}
-
-		editForm.replaceWith(renderMovieDetails(retMovie));
 	});
 
 	editForm.querySelector('.cancel').addEventListener('click', function () {

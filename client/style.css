@@ -95,7 +95,7 @@ main.home-page {
 
     display: flex;
     justify-content: space-around;
-    align-items: start;
+    align-items: center;
     margin-bottom: 20px;
 }
 
@@ -404,4 +404,8 @@ button.edit {
 button.edit:hover {
     background-color: #008000;
     color: white;
+}
+
+.instruction {
+    font-family: Monaco, 'Courier New', Courier, monospace;
 }

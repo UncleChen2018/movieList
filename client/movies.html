@@ -79,20 +79,41 @@
         <div class='right-column container'>
             <div class='instruction'>
                 <h3>instruction</h3>
-                <ul>
-                    <li>
-                        <p>Click <strong style="color:#FF6347;">Search in google</strong> to open a new widow to search
-                            the bold word of this news</p>
+                <h4>A. how to start server</h4>
+                <ol>
+                    <li><strong>create a database in mysql</strong> 
+                        
+                        <br>mysql -u root -p123456
+                        <br>CREATE DATABASE movie_db;
+                        <br>quit
                     </li>
-                    <li>
-                        <p>Click <strong style="color:#FFD300;">Highlight the news</strong> to highlight the sentence of
-                            this news, you can <strong>Remove the highlight</strong> later</p>
+                    <li><strong>import the database</strong>
+                        <br>mysql -u root -p123456 movie_db < movie_db.sql
                     </li>
-                    <li>
-                        <p>Click <strong style="color:#1E90FF;">Delete this news</strong> will remove the current news
-                            from the movies-list</p>
+                    <li><strong>start the server</strong>
+                        <br>npm install
+                        <br>npx prisma generate 
+                        <br>npx nodemon app.js
                     </li>
-                </ul>
+                </ol>
+                <h4>B. how to Use Client</h4>
+                <ol>
+                    <li><strong>browse film</strong> 
+                        <br>use the page size and page number to browse the film, click go to refresh the list
+                        <br>use the search bar to search by title or id, result will be shown in the list
+                        <br>whenever you want to fresh, click the GO
+                        <br>click the arrow beside the title to see the detail of the film, you can fold it later
+                    </li>
+                    <li><strong>edit or add movie</strong>
+                        <br>you can also add a new movie by clicking the add movie button, fill in the form and click the add button
+                        <br>when you in the movie detail page, you can edit the movie by clicking the edit button, cancel the edit by clicking the cancel button
+                        <br> id and genres are not editable now
+                        
+                    </li>
+                    <li><strong>delete movie </strong>
+                        <br>you can delete the movie by clicking the delete button in the movie detail page
+                    </li>
+                </ol>
             </div>
 
 

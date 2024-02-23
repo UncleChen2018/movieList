@@ -24,7 +24,6 @@ const colors = [
 	'#95a5a6', // Concrete
 ];
 
-
 const ids = genres.map((genre) => genre.id);
 
 let details = [];
@@ -78,12 +77,14 @@ function getPosterURL(poster_path) {
 async function renderMovieList(movieList) {
 	const movieListElement = document.querySelector('ol.movies-list');
 	movieListElement.innerHTML = `
-    <li class='column-name'>
+    <div class='list-header'>
+    <div class='column-name'>
       <div>Title</div>
       <div>Hot</div>
       <div>Genres</div>
-    </li>
-    <hr>
+    </div>
+      <hr>
+    </div>
     `;
 
 	// if the movie list is empty, display the empty result
@@ -172,14 +173,20 @@ function renderMovieHead(movie) {
 	function createGenreDiv(genres) {
 		const genresDiv = document.createElement('div');
 		genresDiv.classList.add('genres');
-
-		genres.forEach((genre) => {
+		if (!genres || genres.length === 0) {
 			const genreSpan = document.createElement('span');
-			genreSpan.textContent = genre.name;
-			genreSpan.style.backgroundColor = genresColor[genre.id];
-			genreSpan.dataset.genreId = genre.id;
+			genreSpan.textContent = 'Unknown';
+			genreSpan.style.backgroundColor = genresColor[0];
 			genresDiv.appendChild(genreSpan);
-		});
+		} else {
+			genres.forEach((genre) => {
+				const genreSpan = document.createElement('span');
+				genreSpan.textContent = genre.name;
+				genreSpan.style.backgroundColor = genresColor[genre.id];
+				genreSpan.dataset.genreId = genre.id;
+				genresDiv.appendChild(genreSpan);
+			});
+		}
 
 		return genresDiv;
 	}
@@ -255,9 +262,8 @@ function renderMovieDetails(movie) {
 		tooltip.classList.add('tooltip');
 		tooltip.textContent = 'Click to visit homepage';
 		posterDiv.appendChild(tooltip);
-		
+
 		posterDiv.style.backgroundImage = `url(${posterURL}), url('./resources/no preview.png')`;
-		
 
 		posterDiv.addEventListener('click', openHomepage);
 
@@ -276,10 +282,11 @@ function renderMovieDetails(movie) {
             <p class='overview'>${movie.overview}</p>
             <div class='produce-info'>
                 <span>Id: ${movie.id}</span>
-                <span>Released Date: ${movie.release_date.substring(
-					0,
-					10
-				)}</span>
+                <span>Released Date: ${
+					movie.release_date
+						? movie.release_date.substring(0, 10)
+						: 'Unknown'
+				}</span>
                 <div><i class="fa-regular fa-thumbs-up"></i>${
 					movie.vote_count
 				}</div>
@@ -319,81 +326,133 @@ async function editMovieDetails(event) {
 	const movie = await getMovieDetails(movieId);
 	const editForm = createEditForm(movie);
 	movieDetails.replaceWith(editForm);
-
 }
 
-function createEditForm(movie) {
+//if movie is not null, then create a form to edit the movie details, else add a new movie
+function createEditForm(movie, order = 'update') {
 	const editForm = document.createElement('form');
 	editForm.classList.add('movie-details');
-	editForm.dataset.movieId = movie.id;
+	if (order === 'create') {
+		editForm.classList.add('new-movie');
+	}
+	if (order === 'update') {
+		editForm.dataset.movieId = movie.id;
+	}
 	editForm.innerHTML = `
-        <div class='poster editing'>  
+    <div class='poster editing'>  
         Id (can not change): <input type='text' name='id' readonly value='${
-			movie.id
+			movie ? movie.id : ''
 		}' />
-        title<input type='text' name='title' value='${movie.title}' required  />
-            hot<input type='number' name='popularity' min="0" step="0.001" value='${
-				movie.popularity
-			}' required  />
-            <label for="genres">Genres(can not change):</label>
-<input type="text" name="genres" list="genreList" readonly value="${movie.genres
-		.map((genre) => genre.name)
-		.join(', ')}"/>
-
-<!-- Datalist containing options based on your array of genres -->
-<datalist id="genreList">
-    ${genres.map((genre) => `<option value="${genre.name}"></option>`).join('')}
-</datalist>
-        
-            home page(start with http(s))<input type='text' name='homepage' pattern="https?://.+" 
-            value='${movie.homepage}' />
-            poster_path(start with http(s))<input type='text' name='poster_path' pattern ="https?://.+"  value='${getPosterURL(
-				movie.poster_path
-			)}' />
-        </div>
-        <div class='info' >
-           
-            
-            tagline<input type='text' name='tagline' value='${movie.tagline}' />
-            <textarea name='overview' required style='height:60px;'>${
-				movie.overview
-			}</textarea>
-
-            release date<input type='date' name='release_date' value='${movie.release_date.substring(
-				0,
-				10
-			)}' />
-            <div style='display: flex; justify-content: space-between;align-items:baseline'>
+        title<input type='text' name='title' value='${
+			movie ? movie.title : ''
+		}' required />
+        hot<input type='number' name='popularity' min="0" step="0.001" value='${
+			movie ? movie.popularity : ''
+		}' required />
+        <label for="genres">Genres(can not change):</label>
+        <input type="text" name="genres" list="genreList" readonly value="${
+			movie ? movie.genres.map((genre) => genre.name).join(', ') : ''
+		}"/>
+        <!-- Datalist containing options based on your array of genres -->
+        <datalist id="genreList">
+            ${genres
+				.map((genre) => `<option value="${genre.name}"></option>`)
+				.join('')}
+        </datalist>
+        home page(start with http(s))<input type='text' name='homepage' pattern="https?://.+" 
+        value='${movie ? movie.homepage : ''}' />
+        poster_path(start with http(s))<input type='text' name='poster_path' pattern ="https?://.+"  
+        value='${movie ? getPosterURL(movie.poster_path) : ''}' />
+    </div>
+    <div class='info'>
+        tagline<input type='text' name='tagline' value='${
+			movie ? movie.tagline : ''
+		}' />
+        <textarea name='overview' required style='height:60px;'>${
+			movie ? movie.overview : ''
+		}</textarea>
+        release date<input type='date' name='release_date' value='${
+			movie ? movie.release_date.substring(0, 10) : ''
+		}' />
+        <div style='display: flex; justify-content: space-between;align-items:baseline'>
             vote count<input type='number' name='vote_count' value='${
-				movie.vote_count
+				movie ? movie.vote_count : ''
 			}' />
             vote average <input type='number' name='vote_average' value='${
-				movie.vote_average
+				movie ? movie.vote_average : ''
 			}' step="0.001" max="10" min="0" />
-            </div>
-            <div style='display: flex; justify-content: space-around;'>
+        </div>
+        <div style='display: flex; justify-content: space-around;'>
             <button type='submit'>Save</button>
             <button type='button' class='cancel'>Cancel</button>
-            </div>
         </div>
-    `;
+    </div>
+`;
 
 	editForm.addEventListener('submit', async function (event) {
 		event.preventDefault();
 		const formData = new FormData(editForm);
-		const updatedMovie = Object.fromEntries(formData);
-		const movieId = editForm.dataset.movieId;
-		const movie = await getMovieDetails(movieId);
-		console.log(movie);
-		console.log(updatedMovie);
-		const retMovie = await putUpdateMovieDetails(updatedMovie);
+		const movieData = Object.fromEntries(formData);
+		let retMovie;
+		if (order === 'update') {
+			const movieId = editForm.dataset.movieId;
+			//const movie = await getMovieDetails(movieId);
+			retMovie = await putUpdateMovieDetails(movieData);
+		}
+		if (order === 'create') {
+			retMovie = await postMovieDetails(movieData);
+			console.log(retMovie);
+		}
 
 		editForm.replaceWith(renderMovieDetails(retMovie));
 	});
+
 	editForm.querySelector('.cancel').addEventListener('click', function () {
-		editForm.replaceWith(renderMovieDetails(movie));
+		if (order === 'update') {
+			editForm.replaceWith(renderMovieDetails(movie));
+		}
+		if (order === 'create') {
+			editForm.remove();
+		}
 	});
 	return editForm;
+}
+
+function addNewMovie() {
+	const columnNames = document.querySelector('.list-header');
+	const newMovieForm = createEditForm(null, 'create');
+	newMovieForm.classList.add('new-movie');
+	newMovieForm
+		.querySelector('.cancel')
+		.addEventListener('click', function () {
+			newMovieForm.remove();
+		});
+	columnNames.insertAdjacentElement('afterend', newMovieForm);
+	return newMovieForm;
+}
+
+// add movie details to the server
+async function postMovieDetails(movieDetails) {
+	try {
+		console.log('post movie details');
+		console.log(movieDetails);
+		const movieEndPoint = '/movie';
+		const postRequestConfig = {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify(movieDetails),
+		};
+		const response = await fetch(
+			baseURL + movieEndPoint,
+			postRequestConfig
+		);
+		const movie = await response.json();
+		return movie;
+	} catch (error) {
+		console.error('Error:', error.message);
+	}
 }
 
 // update the movie details
@@ -426,19 +485,20 @@ async function deleteMovieDetails(event) {
 
 	if (confirmDelete) {
 		const movieEndPoint = `/movie/${movieId}`;
-        const deleteRequestConfig = {
-            method: 'DELETE',
-        };
-        const response = await fetch(baseURL + movieEndPoint, deleteRequestConfig);
-        const movie = await response.json();
-        console.log(movie);
-        const movieDetails = document.querySelector(
-            `.movie-item[data-movie-id="${movieId}"]`
-        );
-        movieDetails.remove();
-
-	} 
-	
+		const deleteRequestConfig = {
+			method: 'DELETE',
+		};
+		const response = await fetch(
+			baseURL + movieEndPoint,
+			deleteRequestConfig
+		);
+		const movie = await response.json();
+		console.log(movie);
+		const movieDetails = document.querySelector(
+			`.movie-item[data-movie-id="${movieId}"]`
+		);
+		movieDetails.remove();
+	}
 }
 
 // retrieve the list of movies from the server

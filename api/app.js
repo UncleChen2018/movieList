@@ -129,17 +129,35 @@ app.post('/movie', async (req, res) => {
         if (!req.body) {
             throw new Error('valid data is required');
         }
-        const data = {
-            title: req.body.title,
-            popularity: parseFloat(req.body.popularity),
-            homepage: req.body.homepage,
-            poster_path: req.body.poster_path,
-            tagline: req.body.tagline,
-            overview: req.body.overview,
-            release_date: req.body.release_date + 'T00:00:00Z',
-            vote_count: parseInt(req.body.vote_count),
-            vote_average: parseFloat(req.body.vote_average),
-        };
+        const data = {}
+        if(req.body.title){
+            data.title = req.body.title;
+        }
+        if(req.body.popularity){
+            data.popularity = parseFloat(req.body.popularity);
+        }
+        if(req.body.homepage){
+            data.homepage = req.body.homepage;
+        }
+        if(req.body.poster_path){
+            data.poster_path = req.body.poster_path;
+        }
+        if(req.body.tagline){
+            data.tagline = req.body.tagline;
+        }
+        if(req.body.overview){
+            data.overview = req.body.overview;
+        }
+        if(req.body.release_date){
+            data.release_date = req.body.release_date + 'T00:00:00Z';
+        }
+        if(req.body.vote_count){
+            data.vote_count = parseInt(req.body.vote_count);
+        }
+        if(req.body.vote_average){
+            data.vote_average = parseFloat(req.body.vote_average);
+        }
+        
         const movie = await prisma.details.create({
             data: data,
         });

@@ -9,7 +9,7 @@ datasource db {
 
 /// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model details {
-  id           Int       @id @db.UnsignedInt
+  id           Int       @id @default(autoincrement()) @db.UnsignedInt
   genres       Json?
   title        String?   @db.VarChar(100)
   overview     String?   @db.Text

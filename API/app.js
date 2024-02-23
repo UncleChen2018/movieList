@@ -21,6 +21,17 @@ app.get('/ping', (req, res) => {
 	res.send('pong');
 });
 
+// GET: get all valid genres from the server
+app.get('/genres', async (req, res) => {
+    try {
+        const genres = await prisma.genres.findMany();
+        res.status(200).json(genres);
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ err });
+    }
+});
+
 // Get: get the total number of movies
 app.get('/movieCount', async (req, res) => {
 	try {
@@ -86,6 +97,8 @@ app.get('/movieList', async (req, res) => {
 	}
 });
 
+// GET: get a movie with a specific id
+
 app.get('/movie/:id', async (req, res) => {
 	try {
 		const id = parseInt(req.params.id);
@@ -127,30 +140,93 @@ app.get('/movie/:id', async (req, res) => {
 //   }
 // });
 
-// // PUT: updates Tweet text with :id
-// app.put("/tweets/:id", (req, res) => {
-//   if (!req.body.text || !req.params.id) {
-//     res.status(401).send("incorrect input values");
-//   }
+// PUT: updates movie with :id
+app.put('/movie/:id', async (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
+        
+        if (!id) {
+            throw new Error('valid id is required');
+        }
+        if (!req.body) {
+            throw new Error('valid data is required');
+        }
+        const data = {}
+        if(req.body.title){
+            data.title = req.body.title;
+        }
+        if(req.body.popularity){
+            data.popularity = parseFloat(req.body.popularity);
+        }
+        if(req.body.homepage){
+            data.homepage = req.body.homepage;
+        }
+        if(req.body.poster_path){
+            data.poster_path = req.body.poster_path;
+        }
+        if(req.body.tagline){
+            data.tagline = req.body.tagline;
+        }
+        if(req.body.overview){
+            data.overview = req.body.overview;
+        }
+        if(req.body.release_date){
+            data.release_date = req.body.release_date + 'T00:00:00Z';
+        }
+        if(req.body.vote_count){
+            data.vote_count = parseInt(req.body.vote_count);
+        }
+        if(req.body.vote_average){
+            data.vote_average = parseFloat(req.body.vote_average);
+        }
+        console.log(data.poster_path);
 
-//   const updateResult = updateTweet(req.params.id, req.body.text);
+        const movie = await prisma.details.update({
+            where: {
+                id: id,
+            },
+            data: data,
+        });
+       
+        if (movie) {
+            res.status(200).json(movie);
+        } else {
+            res.status(404).json({
+                err: `Movie id ${req.params.id} not found`,
+            });
+        }
+    }
+    catch (err) {
+        console.log(err);
+        res.status(500).json({ err: err.message });
+    }
+});
 
-//   if (updateResult) {
-//     res.status(200).send();
-//   } else {
-//     res.status(404).send(`Tweet id ${req.params.id} not found`);
-//   }
-// });
+// delete: deletes movie with :id
+app.delete('/movie/:id', async (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
+        if (!id) {
+            throw new Error('valid id is required');
+        }
+        const movie = await prisma.details.delete({
+            where: {
+                id: id,
+            },
+        });
+        if (movie) {
+            res.status(200).json({ message: 'Delete succeeded' });
+        } else {
+            res.status(404).json({
+                err: `Movie id ${req.params.id} not found`,
+            });
+        }
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ err: err.message });
+    }
+});
 
-// app.delete("/tweets/:id", (req, res) => {
-//   const deleteResult = deleteTweet(req.params.id);
-
-//   if (deleteResult) {
-//     res.status(200).send("Delete succeeded");
-//   } else {
-//     res.status(404).send(`Tweet id ${req.params.id} not found`);
-//   }
-// });
 
 // Starts HTTP Server
 app.listen(8001, () => {
